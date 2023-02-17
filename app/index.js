@@ -1,5 +1,7 @@
 import fs from "fs/promises";
 
+initClient();
+
 const data = [
   {
     name: "John Doe",
