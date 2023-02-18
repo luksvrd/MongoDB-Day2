@@ -9,6 +9,6 @@ export default () => {
       console.info("Connected to MongoDB");
     })
     .catch((err) => {
-      console.error("Error connecting to MongoDB", err);
+      console.error("Error connecting to MongoDB", err.message);
     });
 };
