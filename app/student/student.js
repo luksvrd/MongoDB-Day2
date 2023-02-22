@@ -1,29 +1,62 @@
-import { Schema, model } from "mongoose";
+import mongoose, { Schema, model } from "mongoose";
 import gradeSchema from "./grade-schema.js";
 
 const studentSchema = new Schema(
   {
-    name: {
+    first: {
       type: String,
-      required: [true, "Student name is required"],
-      minLength: [3, "Student name must be at least 3 characters"],
-      trim: true,
-      // TODO: Add a custom validator to insure only letters and one space in between words
+      required: [true, "First name is required"],
+      maxLength: [39, "First name must be less than 40 characters long"],
+    },
+    last: {
+      type: String,
+      required: [true, "Last name is required"],
+      maxLength: [39, "Last name must be less than 40 characters long"],
+    },
+    github: {
+      type: String,
+      required: [true, "GitHub username is required"],
+      maxLength: [39, "GitHub username must be less than 40 characters long"],
       validate: {
-        validator(name) {
-          return /^[a-zA-Z]+(\s[a-zA-Z]+)?$/.test(name);
+        async validator(github) {
+          const duplicate = await mongoose.models.Student.findOne({ github });
+
+          // Inverse the boolean value of duplicate
+          return !duplicate;
         },
-        message:
-          "Student name must only contain letters and one space in between words.",
+        message: "Duplicate GitHub username",
       },
     },
 
     // This is an array of subdocuments
     grades: [gradeSchema],
-    // TODO: Add a virtual property to calc the average of the students grade
+    fullName: {
+      type: String,
+      get() {
+        return `${this.first} ${this.last}`;
+      },
+      set(fullName) {
+        const [first, last] = fullName.split(" ");
+
+        this.first = first;
+        this.last = last;
+      },
+      validate: {
+        async validator(fullName) {
+          const duplicate = await mongoose.models.Student.findOne({
+            fullName,
+          });
+
+          // Inverse the boolean value of duplicate
+          return !duplicate;
+        },
+        message: "Duplicate full name",
+      },
+    },
   },
   {
     strict: "throw",
+    toJSON: { getters: true, virtuals: true },
     versionKey: false,
   }
 );
@@ -51,7 +84,5 @@ studentSchema.path("grades").validate(function (grades) {
   // If the number of unique grade names is less than the number of grades, then there are duplicates
   return new Set(lowerCasedGradeNames).size === lowerCasedGradeNames.length;
 }, "Duplicate grade name");
-
-// TODO: Prevent duplicate grade names (custom Hooks)
 
 export default model("Student", studentSchema);

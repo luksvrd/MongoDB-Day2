@@ -18,7 +18,6 @@ const gradeSchema = new Schema({
     // Restrict number to be between 0 and 100
     required: [true, "Earned points are required"],
     min: [0, "Earned points must be greater than 0"],
-    max: [100, "Earned points must be less than 100"],
   },
   possible: {
     type: Number,
@@ -26,6 +25,10 @@ const gradeSchema = new Schema({
     validator(possible) {
       return possible >= this.earned;
     },
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now,
   },
 });
 
