@@ -1,5 +1,5 @@
 // client is how the controller accesses the database. It is passed in from the route.
-// import initClient from "../client.js";
+import initDB from "../client.js";
 import Student from "./Student.js";
 
 // Dont need .toArrray() because we are using mongoose. Thats from native mongo
@@ -30,9 +30,14 @@ const controller = {
   },
   // TODO: add a method to add a new grade to a student by id
   updateStudentWithNewGrade(studentId, newGrade) {
-    return Student.findByIdAndUpdate(studentId, {
-      $push: { grades: newGrade },
-    });
+    return Student.findByIdAndUpdate(
+      studentId,
+      {
+        $push: { grades: newGrade },
+      },
+      // new true returns the updated document, runValidators runs the validators on the new document before saving it. Almot always want to use new true and runValidators
+      { new: true, runValidators: true }
+    );
   },
   updateStudentGrade(id, gradeId, newEarnedGrade) {
     // TODO: Implement this method.
@@ -45,12 +50,29 @@ const controller = {
   },
 };
 
-// await initClient();
+await initDB();
+
+// controller
+//   .create({
+//     fullName: "John Doe",
+//     github: "johndoe",
+//   })
+//   .then((student) => console.log(student))
+//   .catch((err) => console.log(err.message));
 
 // controller
 //   .show("63eedc717b818831c4177ff6")
 //   .then((student) => console.log(student))
 //   .catch((err) => console.log(err.message));
+
+controller
+  .updateStudentWithNewGrade("63eedc717b818831c4177ff6", {})
+  .then((Student) => {
+    console.info(Student);
+  })
+  .catch((err) => {
+    console.error(err.message);
+  });
 
 export default controller;
 
